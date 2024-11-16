@@ -9,7 +9,7 @@ describe("a CreatedThread entities", () => {
     };
 
     // Action and Assert
-    expect(() => new CreatedThread(payload)).toThrow("ADDED_THREAD.NOT_CONTAIN_NEEDED_PROPERTY");
+    expect(() => new CreatedThread(payload)).toThrow("CREATED_THREAD.NOT_CONTAIN_NEEDED_PROPERTY");
   });
 
   it("should throw error when payload did not meet data type specification", () => {
@@ -21,7 +21,7 @@ describe("a CreatedThread entities", () => {
     };
 
     // Action and Assert
-    expect(() => new CreatedThread(payload)).toThrow("ADDED_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION");
+    expect(() => new CreatedThread(payload)).toThrow("CREATED_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION");
   });
 
   it("should create CreatedThread object correctly", () => {
