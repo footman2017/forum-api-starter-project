@@ -3,8 +3,6 @@ const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
 const InvariantError = require("../../../Commons/exceptions/InvariantError");
 const CreatedThread = require("../../../Domains/threads/entities/CreatedThread");
 const CreateThread = require("../../../Domains/threads/entities/CreateThread");
-// const RegisterUser = require('../../../Domains/users/entities/RegisterUser');
-// const RegisteredUser = require('../../../Domains/users/entities/RegisteredUser');
 const pool = require("../../database/postgres/pool");
 const ThreadRepositoryPostgres = require("../ThreadRepositoryPostgres");
 const UserRepositoryPostgres = require("../UserRepositoryPostgres");
@@ -19,25 +17,6 @@ describe("ThreadRepositoryPostgres", () => {
     await pool.end();
   });
 
-  // describe('verifyAvailableUsername function', () => {
-  //   it('should throw InvariantError when username not available', async () => {
-  //     // Arrange
-  //     await UsersTableTestHelper.addUser({ username: 'dicoding' }); // memasukan user baru dengan username dicoding
-  //     const userRepositoryPostgres = new UserRepositoryPostgres(pool, {});
-
-  //     // Action & Assert
-  //     await expect(userRepositoryPostgres.verifyAvailableUsername('dicoding')).rejects.toThrowError(InvariantError);
-  //   });
-
-  //   it('should not throw InvariantError when username available', async () => {
-  //     // Arrange
-  //     const userRepositoryPostgres = new UserRepositoryPostgres(pool, {});
-
-  //     // Action & Assert
-  //     await expect(userRepositoryPostgres.verifyAvailableUsername('dicoding')).resolves.not.toThrowError(InvariantError);
-  //   });
-  // });
-
   describe("createThread function", () => {
     it("should persist create thread and return created thread correctly", async () => {
       // Arrange
@@ -47,7 +26,7 @@ describe("ThreadRepositoryPostgres", () => {
       });
       const fakeIdGenerator = () => "1"; // stub!
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      await UsersTableTestHelper.addUser({ username: 'dicoding' });
+      await UsersTableTestHelper.addUser({ username: "dicoding" });
       // Action
       await threadRepositoryPostgres.createThread("user-123", createThread);
 
@@ -64,7 +43,7 @@ describe("ThreadRepositoryPostgres", () => {
       });
       const fakeIdGenerator = () => "1"; // stub!
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
-      await UsersTableTestHelper.addUser({ username: 'dicoding' });
+      await UsersTableTestHelper.addUser({ username: "dicoding" });
 
       // Action
       const creteadThread = await threadRepositoryPostgres.createThread("user-123", createThread);
@@ -80,74 +59,53 @@ describe("ThreadRepositoryPostgres", () => {
     });
   });
 
-  // describe("getThreadById function", () => {
-  //   it("should throw InvariantError when thread not found", async () => {
-  //     // Arrange
-  //     const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+  describe("getThreadById function", () => {
+    it("should throw InvariantError when thread not found", async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-  //     // Action & Assert
-  //     await expect(threadRepositoryPostgres.getThreadById("thread-1")).rejects.toThrowError(InvariantError);
-  //   });
+      // Action & Assert
+      await expect(threadRepositoryPostgres.getThreadById("thread-1")).rejects.toThrowError(InvariantError);
+    });
 
-  //   it("should return thread correctly", async () => {
-  //     // Arrange
-  //     await UsersTableTestHelper.addUser({ id: "user-321", username: "thread-1" });
-  //     const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+    it("should return thread correctly", async () => {
+      // Arrange
+      ownerId = "user-1";
+      threadId = "thread-1";
 
-  //     // Action
-  //     const userId = await threadRepositoryPostgres.getThreadById("thread-1");
+      await UsersTableTestHelper.addUser({ id: ownerId });
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: ownerId });
 
-  //     // Assert
-  //     expect(userId).toEqual("user-321");
-  //   });
-  // });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-  // describe('getPasswordByUsername', () => {
-  //   it('should throw InvariantError when user not found', () => {
-  //     // Arrange
-  //     const userRepositoryPostgres = new UserRepositoryPostgres(pool, {});
+      // Action
+      const threadData = await threadRepositoryPostgres.getThreadById(threadId);
 
-  //     // Action & Assert
-  //     return expect(userRepositoryPostgres.getPasswordByUsername('dicoding'))
-  //       .rejects
-  //       .toThrowError(InvariantError);
-  //   });
+      // Assert
+      expect(threadData.id).toStrictEqual(threadId);
+    });
+  });
 
-  //   it('should return username password when user is found', async () => {
-  //     // Arrange
-  //     const userRepositoryPostgres = new UserRepositoryPostgres(pool, {});
-  //     await UsersTableTestHelper.addUser({
-  //       username: 'dicoding',
-  //       password: 'secret_password',
-  //     });
+  describe("isThreadExist function", () => {
+    it("should throw InvariantError when thread not available", async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-  //     // Action & Assert
-  //     const password = await userRepositoryPostgres.getPasswordByUsername('dicoding');
-  //     expect(password).toBe('secret_password');
-  //   });
-  // });
+      // Action & Assert
+      await expect(threadRepositoryPostgres.isThreadExist("thread-1")).rejects.toThrowError(InvariantError);
+    });
 
-  // describe('getIdByUsername', () => {
-  //   it('should throw InvariantError when user not found', async () => {
-  //     // Arrange
-  //     const userRepositoryPostgres = new UserRepositoryPostgres(pool, {});
+    it("should not throw InvariantError when thread available", async () => {
+      // Arrange
+      const userId = "user-123";
+      const threadId = "thread-1";
 
-  //     // Action & Assert
-  //     await expect(userRepositoryPostgres.getIdByUsername('dicoding'))
-  //       .rejects
-  //       .toThrowError(InvariantError);
-  //   });
+      await UsersTableTestHelper.addUser({ id: userId });
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-  //   it('should return user id correctly', async () => {
-  //     // Arrange
-  //     await UsersTableTestHelper.addUser({ id: 'user-321', username: 'dicoding' });
-  //     const userRepositoryPostgres = new UserRepositoryPostgres(pool, {});
-
-  //     // Action
-  //     const userId = await userRepositoryPostgres.getIdByUsername('dicoding');
-
-  //     // Assert
-  //     expect(userId).toEqual('user-321');
-  //   });
-  // });
+      // Action & Assert
+      await expect(threadRepositoryPostgres.isThreadExist(threadId)).resolves.not.toThrowError(InvariantError);
+    });
+  });
 });
