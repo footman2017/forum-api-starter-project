@@ -1,11 +1,11 @@
 const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper");
 const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
 const InvariantError = require("../../../Commons/exceptions/InvariantError");
+const NotFoundError = require("../../../Commons/exceptions/NotFoundError");
 const CreatedThread = require("../../../Domains/threads/entities/CreatedThread");
 const CreateThread = require("../../../Domains/threads/entities/CreateThread");
 const pool = require("../../database/postgres/pool");
 const ThreadRepositoryPostgres = require("../ThreadRepositoryPostgres");
-const UserRepositoryPostgres = require("../UserRepositoryPostgres");
 
 describe("ThreadRepositoryPostgres", () => {
   afterEach(async () => {
@@ -87,15 +87,15 @@ describe("ThreadRepositoryPostgres", () => {
   });
 
   describe("isThreadExist function", () => {
-    it("should throw InvariantError when thread not available", async () => {
+    it("should throw NotFoundError when thread not available", async () => {
       // Arrange
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       // Action & Assert
-      await expect(threadRepositoryPostgres.isThreadExist("thread-1")).rejects.toThrowError(InvariantError);
+      await expect(threadRepositoryPostgres.isThreadExist("thread-1")).rejects.toThrowError(NotFoundError);
     });
 
-    it("should not throw InvariantError when thread available", async () => {
+    it("should not throw NotFoundError when thread available", async () => {
       // Arrange
       const userId = "user-123";
       const threadId = "thread-1";
@@ -105,7 +105,7 @@ describe("ThreadRepositoryPostgres", () => {
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       // Action & Assert
-      await expect(threadRepositoryPostgres.isThreadExist(threadId)).resolves.not.toThrowError(InvariantError);
+      await expect(threadRepositoryPostgres.isThreadExist(threadId)).resolves.not.toThrowError(NotFoundError);
     });
   });
 });
