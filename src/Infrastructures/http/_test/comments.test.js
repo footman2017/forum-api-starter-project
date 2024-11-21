@@ -38,7 +38,7 @@ describe("/comments endpoint", () => {
       };
 
       const threadId = "thread-mantap";
-      ownerId = "user-1";
+      const ownerId = "user-1";
 
       await UsersTableTestHelper.addUser({ id: ownerId });
       await ThreadsTableTestHelper.addThread({ id: threadId, owner: ownerId });
@@ -59,10 +59,60 @@ describe("/comments endpoint", () => {
       expect(responseJson.data.addedComment.content).toEqual(requestPayload.content);
     });
 
+    it("should response 404 when thread doesn't exist", async () => {
+      // Arrange
+      const requestPayload = {
+        content: "dicoding",
+      };
+
+      const threadId = "thread-mantap";
+      ownerId = "user-1";
+
+      // Action
+      const response = await server.inject({
+        method: "POST",
+        url: `/threads/${threadId}/comments`,
+        payload: requestPayload,
+        headers: { Authorization: token },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual("fail");
+    });
+
     it("should response 400 when request payload not contain needed property", async () => {
       // Arrange
       const requestPayload = {
         title: "Dicoding Indonesia",
+      };
+
+      const threadId = "thread-mantap";
+      const ownerId = "user-1";
+
+      await UsersTableTestHelper.addUser({ id: ownerId });
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: ownerId });
+
+      // Action
+      const response = await server.inject({
+        method: "POST",
+        url: `/threads/${threadId}/comments`,
+        payload: requestPayload,
+        headers: { Authorization: token },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(400);
+      expect(responseJson.status).toEqual("fail");
+      expect(responseJson.message).toEqual("tidak dapat membuat comment baru karena properti yang dibutuhkan tidak ada");
+    });
+
+    it("should response 400 when request payload not meet data type specification", async () => {
+      // Arrange
+      const requestPayload = {
+        content: 1111,
       };
 
       const threadId = "thread-mantap";
@@ -83,47 +133,30 @@ describe("/comments endpoint", () => {
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(400);
       expect(responseJson.status).toEqual("fail");
-      expect(responseJson.message).toEqual("tidak dapat membuat comment baru karena properti yang dibutuhkan tidak ada");
+      expect(responseJson.message).toEqual("tidak dapat membuat comment baru karena tipe data tidak sesuai");
     });
 
-    // it("should response 400 when request payload not meet data type specification", async () => {
-    //   // Arrange
-    //   const requestPayload = {
-    //     title: "dicoding",
-    //     body: 1111,
-    //   };
+    it("should response 401 when headers not contain access token", async () => {
+      // Arrange
+      const requestPayload = {
+        content: "dicoding",
+      };
 
-    //   // Action
-    //   const response = await server.inject({
-    //     method: "POST",
-    //     url: "/comments",
-    //     payload: requestPayload,
-    //     headers: { Authorization: token },
-    //   });
+      const threadId = "thread-mantap";
+      ownerId = "user-1";
 
-    //   // Assert
-    //   const responseJson = JSON.parse(response.payload);
-    //   expect(response.statusCode).toEqual(400);
-    //   expect(responseJson.status).toEqual("fail");
-    //   expect(responseJson.message).toEqual("tidak dapat membuat thread baru karena tipe data tidak sesuai");
-    // });
+      await UsersTableTestHelper.addUser({ id: ownerId });
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: ownerId });
 
-    // it("should response 401 when headers not contain access token", async () => {
-    //   // Arrange
-    //   const requestPayload = {
-    //     title: "dicoding",
-    //     body: "secret",
-    //   };
+      // Action
+      const response = await server.inject({
+        method: "POST",
+        url: `/threads/${threadId}/comments`,
+        payload: requestPayload,
+      });
 
-    //   // Action
-    //   const response = await server.inject({
-    //     method: "POST",
-    //     url: "/comments",
-    //     payload: requestPayload,
-    //   });
-
-    //   // Assert
-    //   expect(response.statusCode).toEqual(401);
-    // });
+      // Assert
+      expect(response.statusCode).toEqual(401);
+    });
   });
 });
