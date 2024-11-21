@@ -3,6 +3,7 @@ const ClientError = require("../../Commons/exceptions/ClientError");
 const DomainErrorTranslator = require("../../Commons/exceptions/DomainErrorTranslator");
 const users = require("../../Interfaces/http/api/users");
 const threads = require("../../Interfaces/http/api/threads");
+const comments = require("../../Interfaces/http/api/comments");
 const authentications = require("../../Interfaces/http/api/authentications");
 const Jwt = require("@hapi/jwt");
 
@@ -47,13 +48,17 @@ const createServer = async (container) => {
       plugin: threads,
       options: { container },
     },
+    {
+      plugin: comments,
+      options: { container },
+    },
   ]);
 
   server.ext("onPreResponse", (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
 
-    if (response instanceof Error) {      
+    if (response instanceof Error) {
       // bila response tersebut error, tangani sesuai kebutuhan
       const translatedError = DomainErrorTranslator.translate(response);
 
