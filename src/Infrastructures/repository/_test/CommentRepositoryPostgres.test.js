@@ -59,4 +59,22 @@ describe("CommentRepositoryPostgres", () => {
       );
     });
   });
+
+  describe("deleteComment function", () => {
+    it("should persist delete comment correctly", async () => {
+      // Arrange
+      await UsersTableTestHelper.addUser({ id: "dicoding" });
+      await ThreadsTableTestHelper.addThread({ id: "thread-1", owner: "dicoding" });
+      await CommentsTableTestHelper.addComment({ id: "comment-1", threadId: "thread-1", owner: "dicoding" });
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Action
+      await commentRepositoryPostgres.deleteComment("comment-1");
+
+      // Assert
+      const comments = await CommentsTableTestHelper.findCommentsById("comment-1");
+      expect(comments).toHaveLength(1);
+      expect(comments[0].deleted_at).toBeTruthy();
+    });
+  });
 });

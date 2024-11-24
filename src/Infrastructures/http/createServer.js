@@ -77,6 +77,8 @@ const createServer = async (container) => {
         return h.continue;
       }
 
+      // return response;
+
       // penanganan server error sesuai kebutuhan
       const newResponse = h.response({
         status: "error",
