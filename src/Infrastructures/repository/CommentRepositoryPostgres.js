@@ -26,21 +26,28 @@ class CommentRepositoryPostgres extends CommentRepository {
     return new AddedComment({ ...result.rows[0] });
   }
 
-  async getThreadById(threadId) {
+  async getCommentsByThreadId(threadId) {
     const query = {
-      text: "SELECT * FROM comments WHERE id = $1",
+      text: `
+        SELECT
+          c.id,
+          u.username,
+          c.created_at::text as "date",
+          CASE 
+              WHEN c.deleted_at IS NOT NULL THEN '**komentar telah dihapus**'
+              ELSE c.content 
+          END AS content        
+        FROM comments as c
+        LEFT JOIN users as u ON u.id = c.owner
+        WHERE c."threadId" = $1
+        ORDER BY c.created_at ASC
+      `,
       values: [threadId],
     };
 
     const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
-      throw new InvariantError("thread tidak ditemukan");
-    }
-
-    const { id } = result.rows[0];
-
-    return id;
+    return result.rows;
   }
 
   async isCommentExist(commentId, threadId) {
@@ -76,11 +83,7 @@ class CommentRepositoryPostgres extends CommentRepository {
       values: [new Date().toISOString(), id],
     };
 
-    const result = await this._pool.query(query);
-
-    if (!result.rowCount) {
-      throw new NotFoundError("failed to delete comment. Id not found");
-    }
+    await this._pool.query(query);
   }
 }
 

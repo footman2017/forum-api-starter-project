@@ -5,6 +5,7 @@ const TokenTestHelper = require("../../../../tests/TokenTestHelper");
 const container = require("../../container");
 const createServer = require("../createServer");
 const AuthenticationsTableTestHelper = require("../../../../tests/AuthenticationsTableTestHelper");
+const CommentsTableTestHelper = require("../../../../tests/CommentsTableTestHelper");
 
 describe("/threads endpoint", () => {
   let server;
@@ -112,5 +113,127 @@ describe("/threads endpoint", () => {
       // Assert
       expect(response.statusCode).toEqual(401);
     });
+  });
+
+  describe("when GET /threads/{threadId}", () => {
+    it("should response 200", async () => {
+      // Arrange
+      const threadId = "thread-mantap";
+      const commentId = "comment-mantap";
+      const userId1 = "user-1";
+      const userId2 = "user-2";
+
+      await UsersTableTestHelper.addUser({ id: userId1 });
+      await UsersTableTestHelper.addUser({ id: userId2, username: "clean arsitektur" });
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId1 });
+      await CommentsTableTestHelper.addComment({ id: commentId, threadId: threadId, owner: userId2 });
+
+      // Action
+      const response = await server.inject({
+        method: "GET",
+        url: `/threads/${threadId}`,
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual("success");
+      expect(responseJson.data.thread.id).toStrictEqual(threadId);
+      expect(responseJson.data.thread.title).toStrictEqual("dicoding");
+      expect(responseJson.data.thread.body).toStrictEqual("secret");
+    });
+
+    //   it("should response 404 when thread doesn't exist", async () => {
+    //     // Arrange
+    //     const threadId = "thread-mantap";
+    //     const commentId = "comment-mantap";
+    //     const userId1 = "user-1";
+
+    //     await UsersTableTestHelper.addUser({ id: userId1 });
+    //     await UsersTableTestHelper.addUser({ id: loginUser, username: "clean arsitektur" });
+    //     await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId1 });
+    //     await CommentsTableTestHelper.addComment({ id: commentId, threadId: threadId, owner: loginUser });
+
+    //     // Action
+    //     const response = await server.inject({
+    //       method: "DELETE",
+    //       url: `/threads/clean-arsitektur/comments/${commentId}`,
+    //       headers: { Authorization: token },
+    //     });
+
+    //     // Assert
+    //     const responseJson = JSON.parse(response.payload);
+    //     expect(response.statusCode).toEqual(404);
+    //     expect(responseJson.status).toEqual("fail");
+    //   });
+
+    //   it("should response 404 when comment doesn't exist", async () => {
+    //     // Arrange
+    //     const threadId = "thread-mantap";
+    //     const commentId = "comment-mantap";
+    //     const userId1 = "user-1";
+
+    //     await UsersTableTestHelper.addUser({ id: userId1 });
+    //     await UsersTableTestHelper.addUser({ id: loginUser, username: "clean arsitektur" });
+    //     await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId1 });
+    //     await CommentsTableTestHelper.addComment({ id: commentId, threadId: threadId, owner: loginUser });
+
+    //     // Action
+    //     const response = await server.inject({
+    //       method: "DELETE",
+    //       url: `/threads/${threadId}/comments/${commentId}sad`,
+    //       headers: { Authorization: token },
+    //     });
+
+    //     // Assert
+    //     const responseJson = JSON.parse(response.payload);
+    //     expect(response.statusCode).toEqual(404);
+    //     expect(responseJson.status).toEqual("fail");
+    //   });
+
+    //   it("should response 401 when headers not contain access token", async () => {
+    //     // Arrange
+    //     const threadId = "thread-mantap";
+    //     const commentId = "comment-mantap";
+    //     const userId1 = "user-1";
+
+    //     await UsersTableTestHelper.addUser({ id: userId1 });
+    //     await UsersTableTestHelper.addUser({ id: loginUser, username: "clean arsitektur" });
+    //     await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId1 });
+    //     await CommentsTableTestHelper.addComment({ id: commentId, threadId: threadId, owner: loginUser });
+
+    //     // Action
+    //     const response = await server.inject({
+    //       method: "DELETE",
+    //       url: `/threads/${threadId}/comments/${commentId}`,
+    //     });
+
+    //     // Assert
+    //     expect(response.statusCode).toEqual(401);
+    //   });
+
+    //   it("should response 403 not the comment's owner", async () => {
+    //     // Arrange
+    //     const threadId = "thread-mantap";
+    //     const commentId = "comment-mantap";
+    //     const userId1 = "user-1";
+
+    //     await UsersTableTestHelper.addUser({ id: userId1 });
+    //     await UsersTableTestHelper.addUser({ id: "user-lain", username: "clean arsitektur" });
+    //     await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId1 });
+    //     await CommentsTableTestHelper.addComment({ id: commentId, threadId: threadId, owner: "user-lain" });
+
+    //     // Action
+    //     const response = await server.inject({
+    //       method: "DELETE",
+    //       url: `/threads/${threadId}/comments/${commentId}`,
+    //       headers: { Authorization: token },
+    //     });
+
+    //     // Assert
+    //     const responseJson = JSON.parse(response.payload);
+    //     expect(response.statusCode).toEqual(403);
+    //     expect(responseJson.status).toEqual("fail");
+    //   });
   });
 });

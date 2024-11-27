@@ -170,7 +170,7 @@ describe("/comments endpoint", () => {
       const userId1 = "user-1";
 
       await UsersTableTestHelper.addUser({ id: userId1 });
-      await UsersTableTestHelper.addUser({ id: loginUser, username: "clean arsitektur tolol" });
+      await UsersTableTestHelper.addUser({ id: loginUser, username: "clean arsitektur" });
       await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId1 });
       await CommentsTableTestHelper.addComment({ id: commentId, threadId: threadId, owner: loginUser });
 
