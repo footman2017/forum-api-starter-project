@@ -43,14 +43,21 @@ describe("DetailThread Entities", () => {
         comments: [],
       };
 
-      const expectedDetailThread = new DetailThread(payload);
+      const expectedDetailThread = {
+        id: "thread-1",
+        title: "dicoding",
+        body: "password",
+        date: "2024-11-24T10:22:03.454Z",
+        username: "dicoding",
+        comments: [],
+      };
 
       // Action
       const threadDetail = new DetailThread(payload);
 
       // Assert
       expect(threadDetail).toBeInstanceOf(DetailThread);
-      expect(threadDetail).toStrictEqual(expectedDetailThread);
+      expect(threadDetail).toEqual(expectedDetailThread);
     });
   });
 });

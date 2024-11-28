@@ -33,10 +33,8 @@ class CommentRepositoryPostgres extends CommentRepository {
           c.id,
           u.username,
           c.created_at::text as "date",
-          CASE 
-              WHEN c.deleted_at IS NOT NULL THEN '**komentar telah dihapus**'
-              ELSE c.content 
-          END AS content        
+          c.deleted_at,
+          c.content 
         FROM comments as c
         LEFT JOIN users as u ON u.id = c.owner
         WHERE c."threadId" = $1

@@ -5,6 +5,7 @@ const AddedComment = require("../../../Domains/comments/entities/AddedComment");
 const AddComment = require("../../../Domains/comments/entities/AddComment");
 const pool = require("../../database/postgres/pool");
 const CommentRepositoryPostgres = require("../CommentRepositoryPostgres");
+const NotFoundError = require("../../../Commons/exceptions/NotFoundError");
 
 describe("CommentRepositoryPostgres", () => {
   beforeEach(async () => {
@@ -123,6 +124,31 @@ describe("CommentRepositoryPostgres", () => {
         content: "comment 2",
         date: "2024-11-24",
       });
+    });
+  });
+
+  describe("isCommentExist function", () => {
+    it("should throw NotFoundError when comment does not exist", async () => {
+      // Arrange
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(commentRepositoryPostgres.isCommentExist("comment-1", "thread-1")).rejects.toThrowError(NotFoundError);
+    });
+
+    it("should not throw NotFoundError when comment exists and valid", async () => {
+      // Arrange
+      const { user1, user2 } = await initializeTestData();
+      const commentId = "comment-1";
+      const threadId = "thread-2";
+
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: user2.id });
+      await CommentsTableTestHelper.addComment({ id: commentId, threadId, owner: user1.id });
+
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(commentRepositoryPostgres.isCommentExist(commentId, threadId)).resolves.not.toThrowError(NotFoundError);
     });
   });
 });

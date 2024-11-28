@@ -70,11 +70,24 @@ describe("ThreadRepositoryPostgres", () => {
 
     it("should return thread correctly", async () => {
       // Arrange
-      ownerId = "user-1";
-      threadId = "thread-1";
+      const ownerId = "user-1";
+      const threadId = "thread-1";
+      const threadPayload = {
+        id: threadId,
+        title: "Test Thread",
+        body: "This is a test thread.",
+        date: "2024-11-28T10:22:03.454Z",
+        username: "testuser",
+      };
 
-      await UsersTableTestHelper.addUser({ id: ownerId });
-      await ThreadsTableTestHelper.addThread({ id: threadId, owner: ownerId });
+      await UsersTableTestHelper.addUser({ id: ownerId, username: threadPayload.username });
+      await ThreadsTableTestHelper.addThread({
+        id: threadPayload.id,
+        title: threadPayload.title,
+        body: threadPayload.body,
+        owner: ownerId,
+        createdDate: threadPayload.date,
+      });
 
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
@@ -82,7 +95,14 @@ describe("ThreadRepositoryPostgres", () => {
       const threadData = await threadRepositoryPostgres.getThreadById(threadId);
 
       // Assert
-      expect(threadData.id).toStrictEqual(threadId);
+      expect(threadData).toEqual({
+        id: threadPayload.id,
+        title: threadPayload.title,
+        body: threadPayload.body,
+        date: threadPayload.date,
+        username: threadPayload.username,
+        owner: ownerId,
+      });
     });
   });
 
