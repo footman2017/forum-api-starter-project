@@ -8,6 +8,7 @@ class GetDetailThreadUseCase {
   }
 
   async execute(threadId) {
+    await this._threadRepository.isThreadExist(threadId);
     const threadDetail = await this._threadRepository.getThreadById(threadId);
     const threadComments = await this._commentRepository.getCommentsByThreadId(threadId);
     const formatedComments = threadComments.map((threadComment) => new DetailComment(threadComment));

@@ -6,6 +6,7 @@ const AddComment = require("../../../Domains/comments/entities/AddComment");
 const pool = require("../../database/postgres/pool");
 const CommentRepositoryPostgres = require("../CommentRepositoryPostgres");
 const NotFoundError = require("../../../Commons/exceptions/NotFoundError");
+const AuthorizationError = require("../../../Commons/exceptions/AuthorizationError");
 
 describe("CommentRepositoryPostgres", () => {
   beforeEach(async () => {
@@ -92,6 +93,7 @@ describe("CommentRepositoryPostgres", () => {
         createdDate: "2024-11-09",
         thread: thread.id,
         owner: user1.id,
+        deleted_at: null,
       });
 
       await CommentsTableTestHelper.addComment({
@@ -100,6 +102,7 @@ describe("CommentRepositoryPostgres", () => {
         createdDate: "2024-11-24",
         thread: thread.id,
         owner: user2.id,
+        deleted_at: "2024-11-25",
       });
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
@@ -116,6 +119,7 @@ describe("CommentRepositoryPostgres", () => {
         username: user1.username,
         content: "comment 1",
         date: "2024-11-09",
+        deleted_at: null,
       });
 
       expect(comments[1]).toMatchObject({
@@ -123,6 +127,7 @@ describe("CommentRepositoryPostgres", () => {
         username: user2.username,
         content: "comment 2",
         date: "2024-11-24",
+        deleted_at: "2024-11-25",
       });
     });
   });
@@ -149,6 +154,43 @@ describe("CommentRepositoryPostgres", () => {
 
       // Action & Assert
       await expect(commentRepositoryPostgres.isCommentExist(commentId, threadId)).resolves.not.toThrowError(NotFoundError);
+    });
+  });
+
+  describe("isCommentOwner function", () => {
+    it("should not throw AuthorizationError if the user is the owner", async () => {
+      // Arrange
+      const { user1 } = await initializeTestData();
+      const commentId = "comment-123";
+      const owner = "user-123";
+
+      await CommentsTableTestHelper.addComment({
+        id: commentId,
+        content: "A comment",
+        owner: user1.id,
+      });
+
+      const commentRepository = new CommentRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(commentRepository.isCommentOwner(commentId, user1.id)).resolves.not.toThrow();
+    });
+
+    it("should throw AuthorizationError if the user is not the owner", async () => {
+      // Arrange
+      const { user1, user2 } = await initializeTestData();
+      const commentId = "comment-123";
+
+      await CommentsTableTestHelper.addComment({
+        id: commentId,
+        content: "A comment",
+        owner: user1.id,
+      });
+
+      const commentRepository = new CommentRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(commentRepository.isCommentOwner(commentId, user2.id)).rejects.toThrow(AuthorizationError);
     });
   });
 });

@@ -16,20 +16,20 @@ describe("GetDetailThreadUseCase", () => {
   };
 
   const mockComments = [
-    new DetailComment({
+    {
       id: "comment-1",
       username: "sssdada",
       date: "2024-11-24T10:22:03.454Z",
       content: "a comment",
       deleted_at: null,
-    }),
-    new DetailComment({
+    },
+    {
       id: "comment-2",
       username: "qweqwe",
       date: "2024-11-24T10:22:03.454Z",
       content: "**komentar telah dihapus**",
       deleted_at: "2024-11-24T10:22:03.454Z",
-    }),
+    },
   ];
 
   let mockThreadRepository, mockCommentRepository, getDetailThreadUseCase;
@@ -40,16 +40,8 @@ describe("GetDetailThreadUseCase", () => {
     mockCommentRepository = new CommentRepository();
 
     // Mock Functions
-    mockThreadRepository.getThreadById = jest.fn(() =>
-      Promise.resolve({
-        id: mockDetailThread.id,
-        title: mockDetailThread.title,
-        body: mockDetailThread.body,
-        date: mockDetailThread.date,
-        username: mockDetailThread.username,
-        owner: mockDetailThread.owner,
-      })
-    );
+    mockThreadRepository.isThreadExist = jest.fn(() => Promise.resolve());
+    mockThreadRepository.getThreadById = jest.fn(() => Promise.resolve(mockDetailThread));
     mockCommentRepository.getCommentsByThreadId = jest.fn(() => Promise.resolve(mockComments));
 
     // Use Case
@@ -71,11 +63,27 @@ describe("GetDetailThreadUseCase", () => {
       date: "2024-11-24T10:22:03.454Z",
       username: "sadddddd",
       owner: "user-1",
-      comments: mockComments,
+      comments: [
+        new DetailComment({
+          id: "comment-1",
+          username: "sssdada",
+          date: "2024-11-24T10:22:03.454Z",
+          content: "a comment",
+          deleted_at: null,
+        }),
+        new DetailComment({
+          id: "comment-2",
+          username: "qweqwe",
+          date: "2024-11-24T10:22:03.454Z",
+          content: "**komentar telah dihapus**",
+          deleted_at: "2024-11-24T10:22:03.454Z",
+        }),
+      ],
     });
 
     // Assertions
     expect(threadDetail).toStrictEqual(expectedDetailThread);
+    expect(mockThreadRepository.isThreadExist).toBeCalledWith("thread-1");
     expect(mockThreadRepository.getThreadById).toBeCalledWith("thread-1");
     expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith("thread-1");
   });

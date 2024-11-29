@@ -60,13 +60,13 @@ describe("ThreadRepositoryPostgres", () => {
   });
 
   describe("getThreadById function", () => {
-    it("should throw InvariantError when thread not found", async () => {
-      // Arrange
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+    // it("should throw InvariantError when thread not found", async () => {
+    //   // Arrange
+    //   const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
-      // Action & Assert
-      await expect(threadRepositoryPostgres.getThreadById("thread-1")).rejects.toThrowError(InvariantError);
-    });
+    //   // Action & Assert
+    //   await expect(threadRepositoryPostgres.getThreadById("thread-1")).rejects.toThrowError(InvariantError);
+    // });
 
     it("should return thread correctly", async () => {
       // Arrange
