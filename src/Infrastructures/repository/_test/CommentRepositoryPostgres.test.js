@@ -137,8 +137,11 @@ describe("CommentRepositoryPostgres", () => {
       // Arrange
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
-      // Action & Assert
-      await expect(commentRepositoryPostgres.isCommentExist("comment-1", "thread-1")).rejects.toThrowError(NotFoundError);
+      // Action
+      const action = commentRepositoryPostgres.isCommentExist("comment-1", "thread-1");
+
+      // Assert
+      await expect(action).rejects.toThrow(NotFoundError);
     });
 
     it("should not throw NotFoundError when comment exists and valid", async () => {
@@ -152,8 +155,11 @@ describe("CommentRepositoryPostgres", () => {
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
-      // Action & Assert
-      await expect(commentRepositoryPostgres.isCommentExist(commentId, threadId)).resolves.not.toThrowError(NotFoundError);
+      // Action
+      const action = commentRepositoryPostgres.isCommentExist(commentId, threadId);
+
+      // Assert
+      await expect(action).resolves.not.toThrow(NotFoundError);
     });
   });
 
@@ -162,7 +168,6 @@ describe("CommentRepositoryPostgres", () => {
       // Arrange
       const { user1 } = await initializeTestData();
       const commentId = "comment-123";
-      const owner = "user-123";
 
       await CommentsTableTestHelper.addComment({
         id: commentId,
@@ -172,8 +177,11 @@ describe("CommentRepositoryPostgres", () => {
 
       const commentRepository = new CommentRepositoryPostgres(pool, {});
 
-      // Action & Assert
-      await expect(commentRepository.isCommentOwner(commentId, user1.id)).resolves.not.toThrow();
+      // Action
+      const action = commentRepository.isCommentOwner(commentId, user1.id);
+
+      // Assert
+      await expect(action).resolves.not.toThrow(AuthorizationError);
     });
 
     it("should throw AuthorizationError if the user is not the owner", async () => {
@@ -189,8 +197,11 @@ describe("CommentRepositoryPostgres", () => {
 
       const commentRepository = new CommentRepositoryPostgres(pool, {});
 
-      // Action & Assert
-      await expect(commentRepository.isCommentOwner(commentId, user2.id)).rejects.toThrow(AuthorizationError);
+      // Action
+      const action = commentRepository.isCommentOwner(commentId, user2.id);
+
+      // Assert
+      await expect(action).rejects.toThrow(AuthorizationError);
     });
   });
 });
